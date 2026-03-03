@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NH TOPO Analysis</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    
+    <style>
+        body { margin: 0; background: white; color: #333; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+
+        .controls {
+            position: fixed; left: 20px; display: flex; flex-direction: column; gap: 5px;
+            background: rgba(0, 0, 0, 0.05); padding: 15px; border-radius: 0; z-index: 100;
+            width: 270px; border: none; overflow-y: auto;
+        }
+        .box-1 { top: 20px; max-height: 60vh; }
+        .box-2 { top: 68vh; max-height: 25vh; }
+
+        .loading-active { pointer-events: none; opacity: 0.3; }
+
+        .master-btn { 
+            width: 50px; height: 50px; border-radius: 50%; border: none; 
+            cursor: pointer; margin-bottom: 10px; color: white; font-weight: bold;
+            background: #8A9A5B; display: flex; align-items: center; justify-content: center;
+        }
+
+        #info-panel {
+            position: fixed; top: 20px; right: 20px; width: 310px; max-height: 90vh;
+            display: flex; flex-direction: column; gap: 10px; z-index: 100; 
+            overflow-y: auto; padding-right: 10px;
+        }
+        #info-panel::-webkit-scrollbar { width: 8px; }
+        #info-panel::-webkit-scrollbar-thumb { background: #8A9A5B; border-radius: 4px; }
+
+        .text-box {
+            background: #f0f9f0; padding: 10px 15px; border-radius: 0; font-size: 13px;
+            cursor: pointer; overflow: hidden; transition: max-height 0.4s ease-in-out;
+            max-height: 40px; border-left: 3px solid #8A9A5B; flex-shrink: 0;
+        }
+        .text-box.expanded { max-height: 1000px; background: #e4f2e4; }
+        .text-box b { display: block; margin-bottom: 8px; position: relative; }
+        .text-box b::after { content: '▼'; font-size: 10px; position: absolute; right: 0; transition: transform 0.3s; }
+        .text-box.expanded b::after { transform: rotate(180deg); }
+
+        .topo-key { margin-top: 10px; display: grid; gap: 4px; }
+        .key-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+        .swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,0.1); }
+
+        #north-arrow { position: fixed; bottom: 40px; right: 350px; display: flex; flex-direction: column; align-items: center; z-index: 90; }
+        .triangle-up { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 24px solid black; }
+        #north-arrow span { font-weight: bold; margin-top: 5px; font-size: 16px; }
+
+        .hidden-during-load { display: none !important; }
+
+        #stage { 
+            position: relative; width: 100vw; height: 100vh; display: flex; 
+            justify-content: center; align-items: center; pointer-events: none; 
+        }
+
+        #loading-spinner { 
+            width: 25px; height: 25px; border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid black; 
+            border-radius: 50%; animation: spin 1s linear infinite; position: absolute; 
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .object { 
+            position: absolute; width: 95%; height: 95%; opacity: 0; transition: opacity 0.5s ease;
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+        }
+        .house-layer { z-index: 20; }
+        .large-object { width: 140% !important; height: 140% !important; z-index: 30; }
+        .show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div id="north-arrow" class="hidden-during-load">
+  <div class="triangle-up"></div>
+  <span>N</span>
+</div>
+
+<div class="controls box-1 loading-active">
+  <button id="master-toggle-1" class="master-btn">ALL</button>
+  <label><input type="checkbox" id="toggle1"> Topography</label>
+  <label><input type="checkbox" id="toggle2"> Water Bodies</label>
+  <label><input type="checkbox" id="toggle3"> House and Garage</label>
+  <label><input type="checkbox" id="toggle4"> Side and Rear Setbacks</label>
+  <label><input type="checkbox" id="toggle5"> 50' Shoreland Buffer</label>
+  <label><input type="checkbox" id="toggle6"> 50' No-Cut Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle7"> 75' Limited Cut, Septic Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle8"> 25' No-Cut Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle9"> 100' No-Cut No-Disturbance Buffer</label>
+  <label><input type="checkbox" id="toggle10"> 150' Woodland Buffer</label>
+  <label><input type="checkbox" id="toggle11"> 100' No-Cut No-Disturbance Buffer</label>
+  <label><input type="checkbox" id="toggle12"> 50' No-Cut Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle13"> 25' No-Cut Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle14"> 75' Limited Cut, Septic Wetland Buffer</label>
+  <label><input type="checkbox" id="toggle15"> 100' No-Cut No-Disturbance Buffer</label>
+  <label><input type="checkbox" id="toggle16"> 100' Tidal/ Prime Structural Setback</label>
+  <label><input type="checkbox" id="toggle17"> Property Line</label>
+  <label><input type="checkbox" id="toggle18"> 50' Setback MSA HOTL</label>
+  <label><input type="checkbox" id="toggle19"> Building Area</label>
+</div>
+
+<div class="controls box-2 loading-active">
+  <label><input type="checkbox" id="toggle20"> Summer Sun</label>
+  <label><input type="checkbox" id="toggle21"> Winter Sun</label>
+  <label><input type="checkbox" id="toggle22"> Winter Wind Rose</label>
+  <label><input type="checkbox" id="toggle23"> Spring Wind Rose</label>
+  <label><input type="checkbox" id="toggle24"> Summer Wind Rose</label>
+  <label><input type="checkbox" id="toggle25"> Fall Wind Rose</label>
+</div>
+
+<div id="info-panel"></div>
+
+<div id="stage">
+  <div id="loading-spinner"></div>
+  <div id="obj1" class="object"></div><div id="obj2" class="object"></div>
+  <div id="obj3" class="object house-layer"></div>
+  <div id="obj4" class="object"></div><div id="obj5" class="object"></div>
+  <div id="obj6" class="object"></div><div id="obj7" class="object"></div>
+  <div id="obj8" class="object"></div><div id="obj9" class="object"></div>
+  <div id="obj10" class="object"></div><div id="obj11" class="object"></div>
+  <div id="obj12" class="object"></div><div id="obj13" class="object"></div>
+  <div id="obj14" class="object"></div><div id="obj15" class="object"></div>
+  <div id="obj16" class="object"></div><div id="obj17" class="object"></div>
+  <div id="obj18" class="object"></div><div id="obj19" class="object"></div>
+  <div id="obj20" class="object large-object"></div>
+  <div id="obj21" class="object large-object"></div>
+  <div id="obj22" class="object large-object"></div>
+  <div id="obj23" class="object large-object"></div>
+  <div id="obj24" class="object large-object"></div>
+  <div id="obj25" class="object large-object"></div>
+</div>
+
+<script>
+window.onload = function() {
+  const userName = "isabella-cpu"; 
+  const repoName = "NH-TOPO";
+  const cacheBuster = "v=" + Date.now(); 
+
+  const fileNames = [
+    "TOPOTOPO.json", "WATERWATER.json", "HOUSE 1.json", "LINE 1 JSON.json", 
+    "LINE 101.json", "LINE 111.json", "LINE 1212.json", "LINE 1313.json", 
+    "LINE 1414.json", "LINE 1515.json", "LINE 22.json", "LINE 33.json", 
+    "LINE 44.json", "LINE 55.json", "LINE 66.json", "LINE 77.json", 
+    "LINE 88.json", "LINE 99.json", "CONSTRUCTION AREAA.json", 
+    "SUMMER SUN.json", "WINTER SUN 1.json", 
+    "WINTER WIND ROSE.json", "SPRING WIND ROSE.json", "SUMMER WIND ROSE.json", "FALL WIND ROSE.json"
+  ];
+
+  const textData = [
+    { title: "Topography", body: `Key: (feet above sea level)<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#252e14"></div>6-8</div><div class="key-item"><div class="swatch" style="background:#2e3818"></div>8-10</div><div class="key-item"><div class="swatch" style="background:#38451d"></div>10-12</div><div class="key-item"><div class="swatch" style="background:#3d4a20"></div>12-14</div><div class="key-item"><div class="swatch" style="background:#54672c"></div>14-16</div><div class="key-item"><div class="swatch" style="background:#647b33"></div>16-18</div><div class="key-item"><div class="swatch" style="background:#7d9a41"></div>18-20</div><div class="key-item"><div class="swatch" style="background:#89a848"></div>20-22</div><div class="key-item"><div class="swatch" style="background:#abc576"></div>22-24</div><div class="key-item"><div class="swatch" style="background:#c9daa7"></div>24-26</div><div class="key-item"><div class="swatch" style="background:#d9e4c0"></div>26-28</div><div class="key-item"><div class="swatch" style="background:#ecf1e0"></div>28-30</div><div class="key-item"><div class="swatch" style="background:#f2f7ea"></div>30-34</div></div>` },
+    { title: "Water Bodies", body: "Two water bodies are found in the site: Tidal Wetland and Riverine wetland. A tidal wetland is an Area where the water level fluctuates with the tide of the Great Bay or Piscataqua River. These are identified by the Highest Observable Tideline (HOTL) and trigger the strictest 100’ structural setbacks. A riverine wetland are freshwater systems (rivers or streams) that are connected to the tidal wetland. In Newington, these are often protected as 'Prime Wetlands' due to their high ecological value and their role in filtering runoff before it reaches tidal waters. These specific riverines are also contiguous with surface waters." },
+    { title: "House and Garage", body: `<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#594284"></div>House -4,000 sf.</div><div class="key-item"><div class="swatch" style="background:#6e54a1"></div>Garage -900 sf.</div></div>` },
+    { title: "Side and Rear Setbacks", body: "Dimensional requirements measured from property boundaries rather than natural features. These ensure fire safety separation, neighbor privacy, and the preservation of open space." },
+    { title: "50' Shoreland Buffer", body: "Formally known as the Waterfront Buffer, this is the most sensitive area within the protected shoreland. It requires the maintenance of 'natural ground cover' and prohibits the use of fertilizers or chemicals. While limited pruning for 'view paths' may be permitted, the removal of rocks, stumps, or healthy trees is strictly regulated to prevent erosion and filter runoff directly at the water's edge." },
+    { title: "50' No-Cut Wetland Buffer", body: "Tiered protection zones for lower-value or isolated wetlands. They serve as the absolute minimum distance required to prevent immediate habitat degradation and edge erosion." },
+    { title: "75' Limited Cut, Septic Wetland Buffer", body: "A legally mandated 75-foot environmental protection zone established to safeguard water quality and public health. This buffer acts as a transitional management area between development and sensitive ecosystems.Only selective thinning or pruning is permitted to maintain the health of the existing canopy and ground cover.Clear-cutting or significant soil disturbance is prohibited to ensure the root systems remain intact to stabilize the soil and sequester nutrients." },
+    { title: "25' No-Cut Wetland Buffer", body: "Tiered protection zones for lower-value or isolated wetlands. They serve as the absolute minimum distance required to prevent immediate habitat degradation and edge erosion." },
+    { title: "100' No-Cut No-Disturbance Buffer", body: "A 'No-Touch' zone where tree removal, stump extraction, and soil grading are strictly prohibited to preserve the existing natural state." },
+    { title: "150' Woodland Buffer", body: "A sub-zone of the Shoreland Buffer requiring the maintenance of at least 25% natural woodland cover to protect water quality and local ecology." },
+    { title: "100' No-Cut No-Disturbance Buffer", body: "A 'No-Touch' zone where tree removal, stump extraction, and soil grading are strictly prohibited to preserve the existing natural state." },
+    { title: "50' No-Cut Wetland Buffer", body: "Tiered protection zones for lower-value or isolated wetlands. They serve as the absolute minimum distance required to prevent immediate habitat degradation and edge erosion." },
+    { title: "25' No-Cut Wetland Buffer", body: "Tiered protection zones for lower-value or isolated wetlands. They serve as the absolute minimum distance required to prevent immediate habitat degradation and edge erosion." },
+    { title: "75' Limited Cut, Septic Wetland Buffer", body: "A legally mandated 75-foot environmental protection zone established to safeguard water quality and public health. This buffer acts as a transitional management area between development and sensitive ecosystems.Only selective thinning or pruning is permitted to maintain the health of the existing canopy and ground cover.Clear-cutting or significant soil disturbance is prohibited to ensure the root systems remain intact to stabilize the soil and sequester nutrients." },
+    { title: "100' No-Cut No-Disturbance Buffer", body: "A 'No-Touch' zone where tree removal, stump extraction, and soil grading are strictly prohibited to preserve the existing natural state." },
+    { title: "100' Tidal/ Prime Structural Setback", body: "A combined state/local mandate that prohibits primary structures (houses/garages). It serves as a 'No-Build' line for tidal and high-value 'Prime' wetlands." },
+    { title: "Property Line", body: "The legal boundary that defines the precise limits of the piece of land." },
+    { title: "50' Setback MSA HOTL", body: "A structural setback measured from the Mean Sea Level or Highest Observable Tideline (HOTL), acting as a clearance line for accessory structures." },
+    { title: "Building Area", body: "The portion of the site where a permanent structure can be legally and safely built." },
+    { title: "Summer Sun", body: "Solar path analysis for the summer solstice." },
+    { title: "Winter Sun", body: "Solar path analysis for the winter solstice." },
+    { title: "Winter Wind Rose", body: "Dominant wind directions during the winter months." },
+    { title: "Spring Wind Rose", body: "Dominant wind directions during the spring months." },
+    { title: "Summer Wind Rose", body: "Dominant wind directions during the summer months." },
+    { title: "Fall Wind Rose", body: "Dominant wind directions during the fall months." }
+  ];
+
+  const players = [];
+  let isReady = false;
+
+  setTimeout(() => {
+    isReady = true;
+    document.querySelectorAll('.controls').forEach(c => c.classList.remove('loading-active'));
+    document.getElementById('loading-spinner').style.display = 'none';
+    document.getElementById('north-arrow').classList.remove('hidden-during-load');
+  }, 4000);
+
+  fileNames.forEach((fileName, index) => {
+    const i = index + 1;
+    const container = document.getElementById(`obj${i}`);
+    const encoded = encodeURIComponent(fileName);
+    const anim = lottie.loadAnimation({
+      container: container,
+      renderer: 'svg',
+      loop: false,
+      autoplay: false,
+      path: `https://cdn.jsdelivr.net/gh/${userName}/${repoName}/${encoded}?${cacheBuster}`
+    });
+    players.push(anim);
+
+    const toggle = document.getElementById(`toggle${i}`);
+    toggle.addEventListener('change', function() {
+      if (!isReady) return;
+
+      // BOX 2 LOGIC (Index 20-25)
+      if (this.checked) {
+        if (i >= 22 && i <= 25) {
+            for (let targetId = 20; targetId <= 25; targetId++) {
+                if (targetId !== i) {
+                    const targetToggle = document.getElementById(`toggle${targetId}`);
+                    if (targetToggle.checked) {
+                        targetToggle.checked = false;
+                        targetToggle.dispatchEvent(new Event('change'));
+                    }
+                }
+            }
+        } 
+        else if (i === 20 || i === 21) {
+            for (let targetId = 22; targetId <= 25; targetId++) {
+                const targetToggle = document.getElementById(`toggle${targetId}`);
+                if (targetToggle.checked) {
+                    targetToggle.checked = false;
+                    targetToggle.dispatchEvent(new Event('change'));
+                }
+            }
+        }
+      }
+
+      if (this.checked) {
+        container.classList.add('show');
+        anim.goToAndPlay(0, true);
+        addBox(i);
+      } else {
+        container.classList.remove('show');
+        anim.stop();
+        removeBox(i);
+      }
+    });
+  });
+
+  function addBox(id) {
+    if (document.getElementById(`text-box-${id}`)) return;
+    const box = document.createElement('div');
+    box.id = `text-box-${id}`;
+    box.className = 'text-box';
+    box.innerHTML = `<b>${textData[id-1].title}</b>${textData[id-1].body}`;
+    box.onclick = () => box.classList.toggle('expanded');
+    document.getElementById('info-panel').appendChild(box);
+  }
+
+  function removeBox(id) {
+    const box = document.getElementById(`text-box-${id}`);
+    if (box) box.remove();
+  }
+
+  document.getElementById('master-toggle-1').onclick = () => {
+    if (!isReady) return;
+    const t = [];
+    for(let i=1; i<=19; i++) t.push(document.getElementById(`toggle${i}`));
+    const anyOff = t.some(cb => !cb.checked);
+    t.forEach(cb => { cb.checked = anyOff; cb.dispatchEvent(new Event('change')); });
+  };
+};
+</script>
+</body>
+</html>
