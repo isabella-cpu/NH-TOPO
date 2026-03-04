@@ -45,7 +45,7 @@
 
         .topo-key { margin-top: 10px; display: grid; gap: 4px; }
         .key-item { display: flex; align-items: center; gap: 8px; font-size: 11px; }
-        .swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,0.1); }
+        .swatch { width: 14px; height: 14px; border: 1px solid rgba(0,0,0,0.1); flex-shrink: 0; }
 
         #north-arrow { position: fixed; bottom: 40px; right: 350px; display: flex; flex-direction: column; align-items: center; z-index: 90; }
         .triangle-up { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-bottom: 24px solid black; }
@@ -102,6 +102,8 @@
   <label><input type="checkbox" id="toggle17"> Property Line</label>
   <label><input type="checkbox" id="toggle18"> 50' Setback MSA HOTL</label>
   <label><input type="checkbox" id="toggle19"> Building Area</label>
+  <label><input type="checkbox" id="toggle26"> Trees</label>
+  <label><input type="checkbox" id="toggle27"> Direction of Neighboring Properties</label>
 </div>
 
 <div class="controls box-2 loading-active">
@@ -133,6 +135,8 @@
   <div id="obj23" class="object large-object"></div>
   <div id="obj24" class="object large-object"></div>
   <div id="obj25" class="object large-object"></div>
+  <div id="obj26" class="object"></div>
+  <div id="obj27" class="object"></div>
 </div>
 
 <script>
@@ -148,7 +152,8 @@ window.onload = function() {
     "LINE 44.json", "LINE 55.json", "LINE 66.json", "LINE 77.json", 
     "LINE 88.json", "LINE 99.json", "CONSTRUCTION AREAA.json", 
     "SUMMER SUN.json", "WINTER SUN 1.json", 
-    "WINTER WIND ROSE.json", "SPRING WIND ROSE.json", "SUMMER WIND ROSE.json", "FALL WIND ROSE.json"
+    "WINTER WIND ROSE.json", "SPRING WIND ROSE.json", "SUMMER WIND ROSE.json", "FALL WIND ROSE.json",
+    "TREESS.json", "ARROWS.json"
   ];
 
   const textData = [
@@ -176,7 +181,14 @@ window.onload = function() {
     { title: "Winter Wind Rose", body: "Dominant wind directions during the winter months." },
     { title: "Spring Wind Rose", body: "Dominant wind directions during the spring months." },
     { title: "Summer Wind Rose", body: "Dominant wind directions during the summer months." },
-    { title: "Fall Wind Rose", body: "Dominant wind directions during the fall months." }
+    { title: "Fall Wind Rose", body: "Dominant wind directions during the fall months." },
+    { title: "Trees", body: `<div class="topo-key">
+        <div class="key-item"><div class="swatch" style="background:#473f00"></div>Specie: Hickory<br>Caliber: 30’<br>Height: 80’-120’</div>
+        <div class="key-item"><div class="swatch" style="background:#14b014"></div>Specie: Maple<br>Caliber: 20’<br>Height: 50’-70’</div>
+        <div class="key-item"><div class="swatch" style="background:#dffeb9"></div>Specie: Hickory<br>Caliber: 15’<br>Height: 60’-100’</div>
+        <div class="key-item"><div class="swatch" style="background:#9f400a"></div>Specie: Oak<br>Caliber: 24’<br>Height: 60’- 80’</div>
+    </div>` },
+    { title: "Direction of Neighboring Properties", body: "The overall direction of neighboring construction." }
   ];
 
   const players = [];
@@ -190,7 +202,7 @@ window.onload = function() {
   }, 4000);
 
   fileNames.forEach((fileName, index) => {
-    const i = index + 1;
+    const i = (index >= 25) ? index + 1 : index + 1; // Direct map based on array order
     const container = document.getElementById(`obj${i}`);
     const encoded = encodeURIComponent(fileName);
     const anim = lottie.loadAnimation({
@@ -212,7 +224,7 @@ window.onload = function() {
             for (let targetId = 20; targetId <= 25; targetId++) {
                 if (targetId !== i) {
                     const targetToggle = document.getElementById(`toggle${targetId}`);
-                    if (targetToggle.checked) {
+                    if (targetToggle && targetToggle.checked) {
                         targetToggle.checked = false;
                         targetToggle.dispatchEvent(new Event('change'));
                     }
@@ -222,7 +234,7 @@ window.onload = function() {
         else if (i === 20 || i === 21) {
             for (let targetId = 22; targetId <= 25; targetId++) {
                 const targetToggle = document.getElementById(`toggle${targetId}`);
-                if (targetToggle.checked) {
+                if (targetToggle && targetToggle.checked) {
                     targetToggle.checked = false;
                     targetToggle.dispatchEvent(new Event('change'));
                 }
@@ -259,8 +271,9 @@ window.onload = function() {
 
   document.getElementById('master-toggle-1').onclick = () => {
     if (!isReady) return;
-    const t = [];
-    for(let i=1; i<=19; i++) t.push(document.getElementById(`toggle${i}`));
+    // Update master toggle to include new layers (1-19 + 26-27)
+    const targets = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,26,27];
+    const t = targets.map(id => document.getElementById(`toggle${id}`));
     const anyOff = t.some(cb => !cb.checked);
     t.forEach(cb => { cb.checked = anyOff; cb.dispatchEvent(new Event('change')); });
   };
