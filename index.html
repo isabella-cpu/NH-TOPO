@@ -27,13 +27,12 @@
         
         .object { position: absolute; width: 95%; height: 95%; opacity: 0; transition: opacity 0.5s ease; left: 50%; top: 50%; transform: translate(-50%, -50%); }
         
-        /* Layering and Movement */
         .driveway-layer { z-index: 5; }
         
         .house-layer { 
             z-index: 20; 
-            /* 20px Left (-), 20px North (-) */
-            transform: translate(calc(-50% - 200px), calc(-50% - 20px)) !important; 
+            /* 15px Left (-), 20px North (-) */
+            transform: translate(calc(-50% - 15px), calc(-50% - 20px)) !important; 
         }
         
         .box-2-offset { 
@@ -130,18 +129,11 @@ window.onload = function() {
 
   const textData = {
     1: { title: "Topography", body: `Key: (feet above sea level)<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#252e14"></div>6-8</div><div class="key-item"><div class="swatch" style="background:#2e3818"></div>8-10</div><div class="key-item"><div class="swatch" style="background:#38451d"></div>10-12</div><div class="key-item"><div class="swatch" style="background:#3d4a20"></div>12-14</div><div class="key-item"><div class="swatch" style="background:#54672c"></div>14-16</div><div class="key-item"><div class="swatch" style="background:#647b33"></div>16-18</div><div class="key-item"><div class="swatch" style="background:#7d9a41"></div>18-20</div><div class="key-item"><div class="swatch" style="background:#89a848"></div>20-22</div><div class="key-item"><div class="swatch" style="background:#abc576"></div>22-24</div><div class="key-item"><div class="swatch" style="background:#c9daa7"></div>24-26</div><div class="key-item"><div class="swatch" style="background:#d9e4c0"></div>26-28</div><div class="key-item"><div class="swatch" style="background:#ecf1e0"></div>28-30</div><div class="key-item"><div class="swatch" style="background:#f2f7ea"></div>30-34</div></div>` },
-    2: { title: "Water Bodies", body: "Tidal and Riverine wetland systems." },
+    2: { title: "Water Bodies", body: "Two water bodies are found in the site: Tidal Wetland and Riverine wetland." },
     3: { title: "House and Garage", body: "Building footprints." },
-    4: { title: "Side and Rear Setbacks", body: "Dimensional requirements." },
-    26: { title: "Trees", body: `<div class="topo-key">
-        <div class="key-item"><div class="swatch" style="background:#473f00"></div>Specie: Hickory<br>Caliber: 30’<br>Height: 80’-120’</div>
-        <div class="key-item"><div class="swatch" style="background:#14b014"></div>Specie: Maple<br>Caliber: 20’<br>Height: 50’-70’</div>
-        <div class="key-item"><div class="swatch" style="background:#dffeb9"></div>Specie: Hickory<br>Caliber: 15’<br>Height: 60’-100’</div>
-        <div class="key-item"><div class="swatch" style="background:#9f400a"></div>Specie: Oak<br>Caliber: 24’<br>Height: 60’- 80’</div>
-    </div>` },
-    27: { title: "Direction of Neighboring Properties", body: "Overall direction of neighboring construction." },
+    26: { title: "Trees", body: `<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#473f00"></div>Specie: Hickory<br>Caliber: 30’<br>Height: 80’-120’</div><div class="key-item"><div class="swatch" style="background:#14b014"></div>Specie: Maple<br>Caliber: 20’<br>Height: 50’-70’</div><div class="key-item"><div class="swatch" style="background:#dffeb9"></div>Specie: Hickory<br>Caliber: 15’<br>Height: 60’-100’</div><div class="key-item"><div class="swatch" style="background:#9f400a"></div>Specie: Oak<br>Caliber: 24’<br>Height: 60’- 80’</div></div>` },
+    27: { title: "Direction of Neighboring Properties", body: "The overall direction of neighboring construction." },
     28: { title: "Driveway", body: "Existing Driveway" }
-    /* ... rest of text data implied for space ... */
   };
 
   const players = {};
@@ -189,7 +181,7 @@ window.onload = function() {
     const box = document.createElement('div');
     box.id = `text-box-${id}`;
     box.className = 'text-box';
-    box.innerHTML = `<b>${textData[id]?.title || "Info"}</b>${textData[id]?.body || ""}`;
+    box.innerHTML = `<b>${textData[id]?.title || "Layer"}</b>${textData[id]?.body || ""}`;
     box.onclick = () => box.classList.toggle('expanded');
     document.getElementById('info-panel').appendChild(box);
   }
