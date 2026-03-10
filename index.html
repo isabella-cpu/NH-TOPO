@@ -7,28 +7,73 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <style>
         body { margin: 0; background: white; color: #333; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
-        .controls { position: fixed; left: 20px; display: flex; flex-direction: column; gap: 5px; background: rgba(0, 0, 0, 0.05); padding: 15px; z-index: 100; width: 280px; overflow-y: auto; }
         
+        /* Controls Styling */
+        .controls { position: fixed; left: 20px; display: flex; flex-direction: column; gap: 5px; background: rgba(0, 0, 0, 0.05); padding: 15px; z-index: 1000; width: 280px; overflow-y: auto; border-radius: 8px; }
         .box-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; color: #444; }
-        .box-1 { top: 20px; max-height: 40vh; }
-        .box-2 { top: 44vh; max-height: 25vh; }
-        .box-3 { top: 71vh; max-height: 27vh; }
+        .box-1 { top: 20px; max-height: 65vh; }
+        .box-2 { top: 68vh; max-height: 30vh; }
         
         .loading-active { pointer-events: none; opacity: 0.3; }
-        .master-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-bottom: 10px; color: white; font-weight: bold; background: #8A9A5B; }
+        .master-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-bottom: 10px; color: white; font-weight: bold; background: #8A9A5B; transition: background 0.3s; }
+        .master-btn:hover { background: #6b7a44; }
         
-        #info-panel { position: fixed; top: 20px; right: 20px; width: 320px; max-height: 90vh; display: flex; flex-direction: column; gap: 10px; z-index: 100; overflow-y: auto; padding-right: 10px; }
-        .text-box { background: #f0f9f0; padding: 10px 15px; font-size: 13px; cursor: pointer; transition: max-height 0.4s ease-in-out; max-height: 40px; border-left: 3px solid #8A9A5B; overflow: hidden; }
-        .text-box.expanded { max-height: 1000px; }
-        .text-box b { display: block; margin-bottom: 5px; }
+        /* INFO PANEL & TEXT BOX SCROLL FIX */
+        #info-panel { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            width: 320px; 
+            max-height: 90vh; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px; 
+            z-index: 1001; 
+            overflow-y: auto; /* This enables the main scrollbar */
+            padding-right: 10px;
+            pointer-events: auto;
+        }
+
+        /* Custom Scrollbar for Info Panel */
+        #info-panel::-webkit-scrollbar { width: 6px; }
+        #info-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
+        #info-panel::-webkit-scrollbar-thumb { background: #8A9A5B; border-radius: 10px; }
+
+        .text-box { 
+            background: #f0f9f0; 
+            padding: 10px 15px; 
+            font-size: 13px; 
+            cursor: pointer; 
+            transition: all 0.4s ease-in-out; 
+            max-height: 45px; /* Collapsed height */
+            border-left: 3px solid #8A9A5B; 
+            overflow: hidden; /* Keeps it neat when collapsed */
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
         
+        .text-box.expanded { 
+            max-height: 1200px; /* Large enough for any text */
+            overflow-y: visible; 
+        }
+
+        .text-box b { display: block; margin-bottom: 5px; color: #2e3818; }
+        
+        /* STAGE & ANIMATIONS */
         #stage { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; pointer-events: none; }
         .object { position: absolute; width: 95%; height: 95%; opacity: 0; transition: opacity 0.4s ease; left: 50%; top: 50%; transform: translate(-50%, -50%); }
         
-        /* Specific positioning */
-        .house-layer { z-index: 50; transform: translate(calc(-50% - 15px), calc(-50% - 20px)) !important; }
-        .view-layer { z-index: 5; }
-        .box-3-offset { width: 140% !important; height: 140% !important; transform: translate(calc(-50% - 200px), calc(-50% - 40px)) !important; }
+        /* STRICT LAYERING ORDER (z-index) */
+        .layer-topo { z-index: 1; }
+        .layer-water { z-index: 2; }
+        .layer-drive { z-index: 3; }
+        .layer-buffers { z-index: 4; }
+        .layer-buildable { z-index: 5; }
+        .layer-woodland { z-index: 6; }
+        .layer-houses { z-index: 7; transform: translate(calc(-50% - 15px), calc(-50% - 20px)) !important; }
+        .layer-arrows { z-index: 8; }
+        .layer-views { z-index: 9; }
+        .layer-env { z-index: 10; width: 140% !important; height: 140% !important; transform: translate(calc(-50% - 200px), calc(-50% - 40px)) !important; }
         
         .show { opacity: 1; }
         #loading-spinner { width: 30px; height: 30px; border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #8A9A5B; border-radius: 50%; animation: spin 1s linear infinite; position: absolute; left: 50%; top: 50%; }
@@ -42,7 +87,7 @@
 <body>
 
 <div class="controls box-1 loading-active">
-    <div class="box-title">1. Site Elements and Buffers</div>
+    <div class="box-title">Site Elements and Buffers</div>
     <button id="master-toggle-1" class="master-btn">ALL</button>
     <label><input type="checkbox" id="toggle-prop"> Property Line</label>
     <label><input type="checkbox" id="toggle-drive"> Driveway</label>
@@ -53,17 +98,13 @@
     <label><input type="checkbox" id="toggle-b50"> 50' No-Cut Wetland Buffer</label>
     <label><input type="checkbox" id="toggle-b75"> 75' Limited Cut, Septic Wetland Buffers</label>
     <label><input type="checkbox" id="toggle-b100"> 100' No-Cut No-Disturbance Buffer</label>
-</div>
-
-<div class="controls box-2 loading-active">
-    <div class="box-title">2. Inside the Buildable Area</div>
     <label><input type="checkbox" id="toggle-build"> Buildable Area</label>
     <label><input type="checkbox" id="toggle-neighbor"> Direction of neighboring properties</label>
     <label><input type="checkbox" id="toggle-house"> House</label>
 </div>
 
-<div class="controls box-3 loading-active">
-    <div class="box-title">3. View & Environment</div>
+<div class="controls box-2 loading-active">
+    <div class="box-title">View Corridors & Wind and Sun Studies</div>
     <label><input type="checkbox" id="toggle-b150"> 150' Woodland Buffer</label>
     <label><input type="checkbox" id="toggle-b250"> 250' Woodland Buffer</label>
     <label><input type="checkbox" id="toggle-v-open"> View to Open Water</label>
@@ -82,32 +123,29 @@
 
 <div id="stage">
     <div id="loading-spinner"></div>
-    <div id="obj-prop" class="object"></div>
-    <div id="obj-drive" class="object"></div>
-    <div id="obj-topo" class="object"></div>
-    <div id="obj-water" class="object"></div>
-    <div id="obj-setback" class="object"></div>
-    <div id="obj-b25-a" class="object"></div><div id="obj-b25-b" class="object"></div>
-    <div id="obj-b50-a" class="object"></div><div id="obj-b50-b" class="object"></div>
-    <div id="obj-b75-a" class="object"></div><div id="obj-b75-b" class="object"></div>
-    <div id="obj-b100-a" class="object"></div><div id="obj-b100-b" class="object"></div><div id="obj-b100-c" class="object"></div>
-    
-    <div id="obj-build" class="object"></div>
-    <div id="obj-neighbor-a" class="object"></div><div id="obj-neighbor-b" class="object"></div>
-    <div id="obj-house" class="object house-layer"></div>
-    
-    <div id="obj-b150" class="object"></div>
-    <div id="obj-b250" class="object"></div>
-    <div id="obj-v-open" class="object view-layer"></div>
-    <div id="obj-v-wood" class="object view-layer"></div>
-    <div id="obj-v-shallow" class="object view-layer"></div>
-    
-    <div id="obj-sun-s" class="object box-3-offset"></div>
-    <div id="obj-sun-w" class="object box-3-offset"></div>
-    <div id="obj-w-win" class="object box-3-offset"></div>
-    <div id="obj-w-spr" class="object box-3-offset"></div>
-    <div id="obj-w-sum" class="object box-3-offset"></div>
-    <div id="obj-w-fall" class="object box-3-offset"></div>
+    <div id="obj-topo" class="object layer-topo"></div>
+    <div id="obj-water" class="object layer-water"></div>
+    <div id="obj-drive" class="object layer-drive"></div>
+    <div id="obj-prop" class="object layer-buffers"></div>
+    <div id="obj-setback" class="object layer-buffers"></div>
+    <div id="obj-b25-a" class="object layer-buffers"></div><div id="obj-b25-b" class="object layer-buffers"></div>
+    <div id="obj-b50-a" class="object layer-buffers"></div><div id="obj-b50-b" class="object layer-buffers"></div>
+    <div id="obj-b75-a" class="object layer-buffers"></div><div id="obj-b75-b" class="object layer-buffers"></div>
+    <div id="obj-b100-a" class="object layer-buffers"></div><div id="obj-b100-b" class="object layer-buffers"></div><div id="obj-b100-c" class="object layer-buffers"></div>
+    <div id="obj-build" class="object layer-buildable"></div>
+    <div id="obj-b150" class="object layer-woodland"></div>
+    <div id="obj-b250" class="object layer-woodland"></div>
+    <div id="obj-house" class="object layer-houses"></div>
+    <div id="obj-neighbor-a" class="object layer-arrows"></div><div id="obj-neighbor-b" class="object layer-arrows"></div>
+    <div id="obj-v-open" class="object layer-views"></div>
+    <div id="obj-v-wood" class="object layer-views"></div>
+    <div id="obj-v-shallow" class="object layer-views"></div>
+    <div id="obj-sun-s" class="object layer-env"></div>
+    <div id="obj-sun-w" class="object layer-env"></div>
+    <div id="obj-w-win" class="object layer-env"></div>
+    <div id="obj-w-spr" class="object layer-env"></div>
+    <div id="obj-w-sum" class="object layer-env"></div>
+    <div id="obj-w-fall" class="object layer-env"></div>
 </div>
 
 <script>
@@ -145,20 +183,17 @@ window.onload = function() {
     const anims = {};
     let isReady = false;
 
-    // Loading delay
     setTimeout(() => {
         isReady = true;
         document.querySelectorAll('.controls').forEach(el => el.classList.remove('loading-active'));
         document.getElementById('loading-spinner').style.display = 'none';
     }, 3500);
 
-    // Setup Toggles
     Object.keys(config).forEach(key => {
         const item = config[key];
         const toggle = document.getElementById(`toggle-${key}`);
         if (!toggle) return;
 
-        // Initialize animations for this toggle
         anims[key] = item.files.map((file, idx) => {
             const suffix = ["-a", "-b", "-c"][idx] || "";
             const container = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
@@ -174,36 +209,46 @@ window.onload = function() {
         toggle.addEventListener('change', function() {
             if (!isReady) return;
 
-            // Exclusive logic for Sun/Wind (Box 3)
-            if (this.checked && (key.startsWith('sun-') || key.startsWith('w-'))) {
-                Object.keys(config).forEach(k => {
-                    if (k !== key && (k.startsWith('sun-') || k.startsWith('w-'))) {
+            const isSun = key.startsWith('sun-');
+            const isWind = key.startsWith('w-');
+
+            if (this.checked) {
+                if (isSun) {
+                    Object.keys(config).filter(k => k.startsWith('w-')).forEach(k => {
                         const other = document.getElementById(`toggle-${k}`);
                         if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
-                    }
-                });
+                    });
+                } else if (isWind) {
+                    Object.keys(config).filter(k => k.startsWith('sun-') || (k.startsWith('w-') && k !== key)).forEach(k => {
+                        const other = document.getElementById(`toggle-${k}`);
+                        if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
+                    });
+                }
             }
 
             if (this.checked) {
-                // Show layers
                 item.files.forEach((_, idx) => {
                     const suffix = ["-a", "-b", "-c"][idx] || "";
                     const el = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
                     el.classList.add('show');
                     anims[key][idx].goToAndPlay(0, true);
                 });
-                // Add text box if title exists
                 if (item.text) {
                     const panel = document.getElementById('info-panel');
                     const box = document.createElement('div');
                     box.id = `info-${key}`;
                     box.className = 'text-box';
-                    box.innerHTML = `<b>${item.title}</b>${item.text}`;
-                    box.onclick = () => box.classList.toggle('expanded');
+                    box.innerHTML = `<b>${item.title || ""}</b>${item.text}`;
+                    box.onclick = () => {
+                        // Close others before expanding this one for better UX
+                        document.querySelectorAll('.text-box').forEach(b => {
+                            if(b !== box) b.classList.remove('expanded');
+                        });
+                        box.classList.toggle('expanded');
+                    };
                     panel.appendChild(box);
                 }
             } else {
-                // Hide layers
                 item.files.forEach((_, idx) => {
                     const suffix = ["-a", "-b", "-c"][idx] || "";
                     const el = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
@@ -216,9 +261,8 @@ window.onload = function() {
         });
     });
 
-    // Master Toggle Box 1
     document.getElementById('master-toggle-1').onclick = function() {
-        const box1Keys = ["prop", "drive", "topo", "water", "setback", "b25", "b50", "b75", "b100"];
+        const box1Keys = ["prop", "drive", "topo", "water", "setback", "b25", "b50", "b75", "b100", "build", "neighbor", "house"];
         const toggles = box1Keys.map(k => document.getElementById(`toggle-${k}`));
         const allOn = toggles.every(t => t.checked);
         toggles.forEach(t => { t.checked = !allOn; t.dispatchEvent(new Event('change')); });
