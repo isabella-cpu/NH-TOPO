@@ -8,80 +8,41 @@
     <style>
         body { margin: 0; background: white; color: #333; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
         
-        /* Controls Styling */
         .controls { position: fixed; left: 20px; display: flex; flex-direction: column; gap: 5px; background: rgba(0, 0, 0, 0.05); padding: 15px; z-index: 1000; width: 280px; overflow-y: auto; border-radius: 8px; }
         .box-title { font-weight: bold; font-size: 14px; margin-bottom: 8px; border-bottom: 1px solid #ccc; padding-bottom: 4px; color: #444; }
         .box-1 { top: 20px; max-height: 65vh; }
         .box-2 { top: 68vh; max-height: 30vh; }
         
         .loading-active { pointer-events: none; opacity: 0.3; }
-        .master-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-bottom: 10px; color: white; font-weight: bold; background: #8A9A5B; transition: background 0.3s; }
-        .master-btn:hover { background: #6b7a44; }
+        .master-btn { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; margin-bottom: 10px; color: white; font-weight: bold; background: #8A9A5B; }
         
-        /* INFO PANEL & TEXT BOX SCROLL FIX */
-        #info-panel { 
-            position: fixed; 
-            top: 20px; 
-            right: 20px; 
-            width: 320px; 
-            max-height: 90vh; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
-            z-index: 1001; 
-            overflow-y: auto; /* This enables the main scrollbar */
-            padding-right: 10px;
-            pointer-events: auto;
-        }
-
-        /* Custom Scrollbar for Info Panel */
+        #info-panel { position: fixed; top: 20px; right: 20px; width: 320px; max-height: 90vh; display: flex; flex-direction: column; gap: 10px; z-index: 1001; overflow-y: auto; padding-right: 10px; pointer-events: auto; }
         #info-panel::-webkit-scrollbar { width: 6px; }
-        #info-panel::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
         #info-panel::-webkit-scrollbar-thumb { background: #8A9A5B; border-radius: 10px; }
 
-        .text-box { 
-            background: #f0f9f0; 
-            padding: 10px 15px; 
-            font-size: 13px; 
-            cursor: pointer; 
-            transition: all 0.4s ease-in-out; 
-            max-height: 45px; /* Collapsed height */
-            border-left: 3px solid #8A9A5B; 
-            overflow: hidden; /* Keeps it neat when collapsed */
-            flex-shrink: 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
+        .text-box { background: #f0f9f0; padding: 10px 15px; font-size: 13px; cursor: pointer; transition: all 0.4s ease-in-out; max-height: 45px; border-left: 3px solid #8A9A5B; overflow: hidden; flex-shrink: 0; }
+        .text-box.expanded { max-height: 1200px; overflow-y: visible; }
         
-        .text-box.expanded { 
-            max-height: 1200px; /* Large enough for any text */
-            overflow-y: visible; 
-        }
-
-        .text-box b { display: block; margin-bottom: 5px; color: #2e3818; }
-        
-        /* STAGE & ANIMATIONS */
         #stage { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; pointer-events: none; }
         .object { position: absolute; width: 95%; height: 95%; opacity: 0; transition: opacity 0.4s ease; left: 50%; top: 50%; transform: translate(-50%, -50%); }
         
-        /* STRICT LAYERING ORDER (z-index) */
+        /* LAYERING & POSITIONING */
         .layer-topo { z-index: 1; }
         .layer-water { z-index: 2; }
         .layer-drive { z-index: 3; }
         .layer-buffers { z-index: 4; }
         .layer-buildable { z-index: 5; }
         .layer-woodland { z-index: 6; }
-        .layer-houses { z-index: 7; transform: translate(calc(-50% - 15px), calc(-50% - 20px)) !important; }
+        /* Moved house 1cm (38px) right from previous -15px = +23px */
+        .layer-houses { z-index: 7; transform: translate(calc(-50% + 23px), calc(-50% - 20px)) !important; }
         .layer-arrows { z-index: 8; }
         .layer-views { z-index: 9; }
-        .layer-env { z-index: 10; width: 140% !important; height: 140% !important; transform: translate(calc(-50% - 200px), calc(-50% - 40px)) !important; }
+        /* Moved Env 1cm (38px) right from previous -200px = -162px */
+        .layer-env { z-index: 10; width: 140% !important; height: 140% !important; transform: translate(calc(-50% - 162px), calc(-50% - 40px)) !important; }
         
         .show { opacity: 1; }
         #loading-spinner { width: 30px; height: 30px; border: 3px solid rgba(0,0,0,0.1); border-top: 3px solid #8A9A5B; border-radius: 50%; animation: spin 1s linear infinite; position: absolute; left: 50%; top: 50%; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        .topo-key { margin-top: 8px; display: grid; gap: 3px; font-size: 11px; }
-        .key-item { display: flex; align-items: center; gap: 6px; }
-        .swatch { width: 12px; height: 12px; border: 1px solid rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
@@ -128,15 +89,18 @@
     <div id="obj-drive" class="object layer-drive"></div>
     <div id="obj-prop" class="object layer-buffers"></div>
     <div id="obj-setback" class="object layer-buffers"></div>
-    <div id="obj-b25-a" class="object layer-buffers"></div><div id="obj-b25-b" class="object layer-buffers"></div>
-    <div id="obj-b50-a" class="object layer-buffers"></div><div id="obj-b50-b" class="object layer-buffers"></div>
-    <div id="obj-b75-a" class="object layer-buffers"></div><div id="obj-b75-b" class="object layer-buffers"></div>
-    <div id="obj-b100-a" class="object layer-buffers"></div><div id="obj-b100-b" class="object layer-buffers"></div><div id="obj-b100-c" class="object layer-buffers"></div>
+    
+    <div id="obj-b25-1" class="object layer-buffers"></div><div id="obj-b25-2" class="object layer-buffers"></div>
+    <div id="obj-b50-1" class="object layer-buffers"></div><div id="obj-b50-2" class="object layer-buffers"></div><div id="obj-b50-3" class="object layer-buffers"></div>
+    <div id="obj-b75-1" class="object layer-buffers"></div><div id="obj-b75-2" class="object layer-buffers"></div>
+    <div id="obj-b100-1" class="object layer-buffers"></div><div id="obj-b100-2" class="object layer-buffers"></div><div id="obj-b100-3" class="object layer-buffers"></div><div id="obj-b100-4" class="object layer-buffers"></div>
+    
     <div id="obj-build" class="object layer-buildable"></div>
     <div id="obj-b150" class="object layer-woodland"></div>
     <div id="obj-b250" class="object layer-woodland"></div>
     <div id="obj-house" class="object layer-houses"></div>
-    <div id="obj-neighbor-a" class="object layer-arrows"></div><div id="obj-neighbor-b" class="object layer-arrows"></div>
+    <div id="obj-neighbor-1" class="object layer-arrows"></div><div id="obj-neighbor-2" class="object layer-arrows"></div>
+    
     <div id="obj-v-open" class="object layer-views"></div>
     <div id="obj-v-wood" class="object layer-views"></div>
     <div id="obj-v-shallow" class="object layer-views"></div>
@@ -157,27 +121,31 @@ window.onload = function() {
     const config = {
         "prop": { files: ["LINE 88.json"], title: "Property Line", text: "The legal boundary of the property." },
         "drive": { files: ["DRIVEWAY.json"], title: "Driveway", text: "Existing Driveway" },
-        "topo": { files: ["TOPOTOPO.json"], title: "Topo", text: `Key: (feet above sea level)<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#252e14"></div>6-8</div><div class="key-item"><div class="swatch" style="background:#89a848"></div>20-22</div><div class="key-item"><div class="swatch" style="background:#f2f7ea"></div>30-34</div></div>` },
-        "water": { files: ["WATERWATER.json"], title: "Water", text: "Tidal Wetland and Riverine wetland systems." },
-        "setback": { files: ["PROP SETBACK.json"], title: "Setbacks", text: "Dimensional requirements measured from property boundaries." },
-        "b25": { files: ["LINE 1313.json", "LINE 44.json"], title: "25' No-Cut Wetland Buffer", text: "Tiered protection zones for lower-value or isolated wetlands providing a minimum 25-foot natural vegetation filter." },
-        "b50": { files: ["LINE 111.json", "LINE 33.json"], title: "50' No-Cut Wetland Buffer", text: "Standard 50-foot protection zones for state-jurisdictional wetlands to prevent sediment and nutrient runoff." },
-        "b75": { files: ["LINE 1212.json", "LINE 55.json"], title: "75' Limited Cut, Septic Wetland Buffers", text: "A mandated 75-foot environmental zone serving as a transitional management area for septic placement and limited thinning." },
-        "b100": { files: ["LINE 1414.json", "LINE 22.json", "LINE 66.json"], title: "100' No-Cut No-Disturbance Buffer", text: "A strict 'No-Touch' zone where tree removal and soil disturbance are prohibited to protect sensitive tidal and inland ecologies." },
-        "build": { files: ["CONSTRUCTION AREAA.json"], title: "Buildable Area", text: "The portion of the site remaining after all environmental setbacks and buffers are applied." },
-        "neighbor": { files: ["ARROWS.json", "NEIGHBORING HOUSES.json"], title: "Direction of neighboring properties", text: "Analysis of adjacent construction patterns and site orientations." },
-        "house": { files: ["HOUSE 1.json"], title: "House", text: "Proposed building footprints for primary residence and garage." },
-        "b150": { files: ["150' Woodland Buffer.json"], title: "150' Woodland Buffer", text: "Newington, NH Shoreland Zone: Primary structures are permitted within this 150' zone, provided at least 25% of the existing woodland remains in an unaltered state." },
-        "b250": { files: ["250' shoreland buffer.json"], title: "250' Woodland Buffer", text: "Newington, NH Protected Shoreland: Within the 250' boundary, no specific state tree-cutting restrictions apply beyond the 150' mark. All new construction, expansions, and impervious surfaces are generally permitted subject to local lot coverage limits." },
-        "v-open": { files: ["VIEW CORRIDOR NORTH.json"], title: "View to Open Water", text: "" },
-        "v-wood": { files: ["VIEW CORRIDOR SOUTH.json"], text: "" },
-        "v-shallow": { files: ["VIEW CORRIDOR EAST.json"], text: "" },
-        "sun-s": { files: ["SUMMER SUN.json"], title: "Summer Sun", text: "Solar path analysis for summer solstice." },
-        "sun-w": { files: ["WINTER SUN 1.json"], title: "Winter Sun", text: "Solar path analysis for winter solstice." },
-        "w-win": { files: ["WINTER WIND ROSE.json"], title: "Winter Wind", text: "Dominant cold winds." },
-        "w-spr": { files: ["SPRING WIND ROSE.json"], title: "Spring Wind", text: "Seasonal wind patterns." },
-        "w-sum": { files: ["SUMMER WIND ROSE.json"], title: "Summer Wind", text: "Seasonal wind patterns." },
-        "w-fall": { files: ["FALL WIND ROSE.json"], title: "Fall Wind", text: "Seasonal wind patterns." }
+        "topo": { files: ["TOPOTOPO.json"], title: "Topo", text: "Site elevation and terrain analysis." },
+        "water": { files: ["WATERWATER.json"], title: "Water", text: "Tidal and Riverine wetland systems." },
+        "setback": { files: ["PROP SETBACK.json"], title: "Setbacks", text: "Dimensional requirements from property lines." },
+        
+        "b25": { files: ["LINE 1313.json", "LINE 44.json"], title: "25' No-Cut Wetland Buffer", text: "A secondary environmental protection zone providing a 25-foot natural vegetation filter for smaller or isolated wetlands." },
+        "b50": { files: ["LINE 111.json", "LINE 33.json", "LINE 101.json"], title: "50' No-Cut Wetland Buffer", text: "Standard 50-foot protection zones for state-jurisdictional wetlands and shoreland buffers to prevent sediment runoff." },
+        "b75": { files: ["LINE 1212.json", "LINE 55.json"], title: "75' Limited Cut, Septic Wetland Buffers", text: "A 75-foot environmental management area mandated for septic placement and limited vegetation thinning." },
+        "b100": { files: ["LINE 1414.json", "LINE 22.json", "LINE 66.json", "LINE 77.json"], title: "100' No-Cut No-Disturbance Buffer", text: "A critical 100-foot 'No-Touch' zone protecting sensitive tidal areas and primary structural setbacks from disturbance." },
+        
+        "build": { files: ["CONSTRUCTION AREAA.json"], title: "Buildable Area", text: "The area remaining after all environmental and zoning setbacks." },
+        "neighbor": { files: ["ARROWS.json", "NEIGHBORING HOUSES.json"], title: "Direction of neighboring properties", text: "Analysis of adjacent housing footprints and orientation." },
+        "house": { files: ["HOUSE 1.json"], title: "House", text: "Proposed primary structure." },
+        "b150": { files: ["150' Woodland Buffer.json"], title: "150' Woodland Buffer", text: "Newington, NH: Primary structure allowed; 25% of woodland must remain unaltered." },
+        "b250": { files: ["250 MEEEEE.json"], title: "250' Woodland Buffer", text: "Newington, NH: No specific tree cutting restrictions; new construction structures and additions allowed." },
+        
+        "v-open": { files: ["VIEW CORRIDOR NORTH.json"], title: "View to Open Water" },
+        "v-wood": { files: ["VIEW CORRIDOR SOUTH.json"], title: "View to Woods" },
+        "v-shallow": { files: ["VIEW CORRIDOR EAST.json"], title: "View to Shallow Water" },
+        
+        "sun-s": { files: ["SUMMER SUN.json"], title: "Summer Sun" },
+        "sun-w": { files: ["WINTER SUN 1.json"], title: "Winter Sun" },
+        "w-win": { files: ["WINTER WIND ROSE.json"], title: "Winter Wind Rose" },
+        "w-spr": { files: ["SPRING WIND ROSE.json"], title: "Spring Wind Rose" },
+        "w-sum": { files: ["SUMMER WIND ROSE.json"], title: "Summer Wind Rose" },
+        "w-fall": { files: ["FALL WIND ROSE.json"], title: "Fall Wind Rose" }
     };
 
     const anims = {};
@@ -195,8 +163,8 @@ window.onload = function() {
         if (!toggle) return;
 
         anims[key] = item.files.map((file, idx) => {
-            const suffix = ["-a", "-b", "-c"][idx] || "";
-            const container = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
+            const containerId = `obj-${key}-${idx + 1}`;
+            const container = document.getElementById(containerId) || document.getElementById(`obj-${key}`);
             return lottie.loadAnimation({
                 container: container,
                 renderer: 'svg',
@@ -209,27 +177,23 @@ window.onload = function() {
         toggle.addEventListener('change', function() {
             if (!isReady) return;
 
-            const isSun = key.startsWith('sun-');
-            const isWind = key.startsWith('w-');
-
-            if (this.checked) {
-                if (isSun) {
-                    Object.keys(config).filter(k => k.startsWith('w-')).forEach(k => {
-                        const other = document.getElementById(`toggle-${k}`);
-                        if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
-                    });
-                } else if (isWind) {
-                    Object.keys(config).filter(k => k.startsWith('sun-') || (k.startsWith('w-') && k !== key)).forEach(k => {
-                        const other = document.getElementById(`toggle-${k}`);
-                        if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
-                    });
-                }
+            // Sun/Wind Mutual Exclusion Logic
+            if (this.checked && key.startsWith('w-')) {
+                Object.keys(config).filter(k => k.startsWith('sun-') || (k.startsWith('w-') && k !== key)).forEach(k => {
+                    const other = document.getElementById(`toggle-${k}`);
+                    if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
+                });
+            } else if (this.checked && key.startsWith('sun-')) {
+                Object.keys(config).filter(k => k.startsWith('w-')).forEach(k => {
+                    const other = document.getElementById(`toggle-${k}`);
+                    if (other.checked) { other.checked = false; other.dispatchEvent(new Event('change')); }
+                });
             }
 
             if (this.checked) {
                 item.files.forEach((_, idx) => {
-                    const suffix = ["-a", "-b", "-c"][idx] || "";
-                    const el = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
+                    const containerId = `obj-${key}-${idx + 1}`;
+                    const el = document.getElementById(containerId) || document.getElementById(`obj-${key}`);
                     el.classList.add('show');
                     anims[key][idx].goToAndPlay(0, true);
                 });
@@ -238,20 +202,17 @@ window.onload = function() {
                     const box = document.createElement('div');
                     box.id = `info-${key}`;
                     box.className = 'text-box';
-                    box.innerHTML = `<b>${item.title || ""}</b>${item.text}`;
+                    box.innerHTML = `<b>${item.title}</b>${item.text}`;
                     box.onclick = () => {
-                        // Close others before expanding this one for better UX
-                        document.querySelectorAll('.text-box').forEach(b => {
-                            if(b !== box) b.classList.remove('expanded');
-                        });
+                        document.querySelectorAll('.text-box').forEach(b => { if(b !== box) b.classList.remove('expanded'); });
                         box.classList.toggle('expanded');
                     };
                     panel.appendChild(box);
                 }
             } else {
                 item.files.forEach((_, idx) => {
-                    const suffix = ["-a", "-b", "-c"][idx] || "";
-                    const el = document.getElementById(`obj-${key}${suffix}`) || document.getElementById(`obj-${key}`);
+                    const containerId = `obj-${key}-${idx + 1}`;
+                    const el = document.getElementById(containerId) || document.getElementById(`obj-${key}`);
                     el.classList.remove('show');
                     anims[key][idx].stop();
                 });
@@ -264,8 +225,8 @@ window.onload = function() {
     document.getElementById('master-toggle-1').onclick = function() {
         const box1Keys = ["prop", "drive", "topo", "water", "setback", "b25", "b50", "b75", "b100", "build", "neighbor", "house"];
         const toggles = box1Keys.map(k => document.getElementById(`toggle-${k}`));
-        const allOn = toggles.every(t => t.checked);
-        toggles.forEach(t => { t.checked = !allOn; t.dispatchEvent(new Event('change')); });
+        const anyOff = toggles.some(t => !t.checked);
+        toggles.forEach(t => { t.checked = anyOff; t.dispatchEvent(new Event('change')); });
     };
 };
 </script>
