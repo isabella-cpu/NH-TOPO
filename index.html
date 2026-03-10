@@ -32,7 +32,10 @@
         .layer-buffers { z-index: 4; }
         .layer-buildable { z-index: 5; }
         .layer-woodland { z-index: 6; }
-        .layer-houses { z-index: 7; transform: translate(calc(-50% + 23px), calc(-50% - 48px)) !important; }
+        
+        /* RESTORED ORIGINAL HOUSE POSITION (-15px, -20px) */
+        .layer-houses { z-index: 7; transform: translate(calc(-50% - 15px), calc(-50% - 20px)) !important; }
+        
         .layer-arrows { z-index: 8; }
         .layer-views { z-index: 9; }
         .layer-env { z-index: 10; width: 140% !important; height: 140% !important; transform: translate(calc(-50% - 154px), calc(-50% - 68px)) !important; }
@@ -54,7 +57,7 @@
     <button id="master-toggle-1" class="master-btn">ALL</button>
     <label><input type="checkbox" id="toggle-prop"> Property Line</label>
     <label><input type="checkbox" id="toggle-drive"> Driveway</label>
-    <label><input type="checkbox" id="toggle-topo"> Topography</label>
+    <label><input type="checkbox" id="toggle-topo"> Topo</label>
     <label><input type="checkbox" id="toggle-water"> Water</label>
     <label><input type="checkbox" id="toggle-setback"> Setbacks</label>
     <label><input type="checkbox" id="toggle-b25"> 25' No-Cut Wetland Buffer</label>
@@ -65,7 +68,7 @@
     <label><input type="checkbox" id="toggle-wood150"> 150' Woodland Buffer</label>
     <label><input type="checkbox" id="toggle-shore"> 250' Shoreland Buffer</label>
     <label><input type="checkbox" id="toggle-build"> Buildable Area</label>
-    <label><input type="checkbox" id="toggle-neighbor"> Direction of Neighboring Properties</label>
+    <label><input type="checkbox" id="toggle-neighbor"> Direction of neighboring properties</label>
     <label><input type="checkbox" id="toggle-house"> House</label>
 </div>
 
