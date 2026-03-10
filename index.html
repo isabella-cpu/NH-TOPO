@@ -33,11 +33,8 @@
         .layer-buildable { z-index: 5; }
         .layer-woodland { z-index: 6; }
         
-        /* RESTORED ORIGINAL HOUSE POSITION (-15px, -20px) */
-        .layer-houses { 
-    z-index: 7; 
-    transform: translate(calc(-50% - 5px), calc(-50% - 7px)) !important; 
-}
+        /* UPDATED HOUSE POSITION: 0.35cm South and 0.25cm Right */
+        .layer-houses { z-index: 7; transform: translate(calc(-50% - 5px), calc(-50% - 7px)) !important; }
         
         .layer-arrows { z-index: 8; }
         .layer-views { z-index: 9; }
@@ -130,32 +127,32 @@ window.onload = function() {
     const cb = "v=" + Date.now();
 
     const config = {
-        "prop": { files: ["LINE 88.json"], title: "Property Line", text: "The legal boundary of the property encompassing the project site." },
-        "drive": { files: ["DRIVEWAY.json"], title: "Driveway", text: "Existing access road and driveway footprint." },
-        "topo": { files: ["TOPOTOPO.json"], title: "Topo", text: `Key: (feet above sea level)<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#252e14"></div>6-8</div><div class="key-item"><div class="swatch" style="background:#2e3818"></div>8-10</div><div class="key-item"><div class="swatch" style="background:#38451d"></div>10-12</div><div class="key-item"><div class="swatch" style="background:#3d4a20"></div>12-14</div><div class="key-item"><div class="swatch" style="background:#54672c"></div>14-16</div><div class="key-item"><div class="swatch" style="background:#647b33"></div>16-18</div><div class="key-item"><div class="swatch" style="background:#7d9a41"></div>18-20</div><div class="key-item"><div class="swatch" style="background:#89a848"></div>20-22</div><div class="key-item"><div class="swatch" style="background:#abc576"></div>22-24</div><div class="key-item"><div class="swatch" style="background:#c9daa7"></div>24-26</div><div class="key-item"><div class="swatch" style="background:#d9e4c0"></div>26-28</div><div class="key-item"><div class="swatch" style="background:#ecf1e0"></div>28-30</div><div class="key-item"><div class="swatch" style="background:#f2f7ea"></div>30-34</div></div>` },
-        "water": { files: ["WATERWATER.json"], title: "Water", text: "Tidal and Riverine wetland systems adjacent to the site." },
-        "setback": { files: ["PROP SETBACK.json"], title: "Setbacks", text: "Dimensional requirements and structural offsets measured from property boundaries." },
-        "hotl": { files: ["LINE 99.json"], title: "50' Setback MSA HOTL", text: "50-foot structural setback from the Mean Salt Water High Ocean Tide Line." },
-        "shore": { files: ["LINE 101.json"], title: "250' Shoreland Buffer", text: "The 250-foot protected shoreland boundary defined by state jurisdictional standards." },
-        "wood150": { files: ["LINE 1515.json"], title: "150' Woodland Buffer", text: "Environmental protection zone for inland woodland and natural vegetation." },
-        "b25": { files: ["LINE 1313.json", "LINE 44.json"], title: "25' No-Cut Wetland Buffer", text: "Secondary protection zone providing a natural vegetation filter for isolated wetlands." },
-        "b50": { files: ["LINE 111.json", "LINE 33.json"], title: "50' No-Cut Wetland Buffer", text: "Standard 50-foot protection zone for jurisdictional wetlands to prevent nutrient runoff." },
-        "b75": { files: ["LINE 1212.json", "LINE 55.json"], title: "75' Limited Cut, Septic Wetland Buffers", text: "Mandated 75-foot management area for septic system placement and limited thinning." },
-        "b100": { files: ["LINE 1414.json", "LINE 22.json", "LINE 66.json", "LINE 77.json"], title: "100' No-Cut No-Disturbance Buffer", text: "Strict 'No-Touch' zone protecting sensitive tidal ecologies and prime structural setbacks." },
-        "build": { files: ["CONSTRUCTION AREAA.json"], title: "Buildable Area", text: "Maximum developable area remaining after all environmental buffers and setbacks are subtracted." },
-        "neighbor": { files: ["ARROWS.json", "NEIGHBORING HOUSES.json"], title: "Direction of neighboring properties", text: "Visual analysis of adjacent properties and construction patterns." },
-        "house": { files: ["HOUSE 1.json"], title: "House", text: `Approx 3,800 sq. ft. Total Floor Area.<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#624990; border:1px solid #333"></div>Primary Structure Footprint</div></div>` },
-        "b150": { files: ["150.json"], title: "150’ Woodland Buffer", text: "Shoreland Zone: Primary structure allowed; 25% of woodland must remain unaltered." },
-        "b250": { files: ["250 MEEEEE.json"], title: "250' Woodland Buffer", text: "Protected Shoreland: No specific tree cutting restrictions; additions and expansions allowed." },
-        "v-open": { files: ["VIEW CORRIDOR NORTH.json"], title: "View to Open Water", text: "Primary visual axis toward the northern open water body." },
-        "v-wood": { files: ["VIEW CORRIDOR SOUTH.json"], title: "View to Woods", text: "Protected visual corridor into the southern woodland area." },
-        "v-shallow": { files: ["VIEW CORRIDOR EAST.json"], title: "View to Shallow Water", text: "Visual orientation toward eastern shallow wetland systems." },
-        "sun-s": { files: ["SUMMER SUN.json"], title: "Summer Sun", text: "Solar path analysis for the summer solstice." },
-        "sun-w": { files: ["WINTER SUN 1.json"], title: "Winter Sun", text: "Solar path analysis for the winter solstice." },
-        "w-win": { files: ["WINTER WIND ROSE.json"], title: "Winter Wind Rose", text: "Prevailing cold weather wind patterns." },
-        "w-spr": { files: ["SPRING WIND ROSE.json"], title: "Spring Wind Rose", text: "Seasonal spring wind distribution." },
-        "w-sum": { files: ["SUMMER WIND ROSE.json"], title: "Summer Wind Rose", text: "Seasonal summer wind distribution." },
-        "w-fall": { files: ["FALL WIND ROSE.json"], title: "Fall Wind Rose", text: "Seasonal fall wind distribution." }
+        "prop": { files: ["LINE 88.json"], title: "Property Line", text: "The legal boundary of the property encompassing the project site, defining the maximum extent of land ownership and development rights." },
+        "drive": { files: ["DRIVEWAY.json"], title: "Driveway", text: "Existing and proposed access roads, driveway footprint, and circulation paths serving the primary residence." },
+        "topo": { files: ["TOPOTOPO.json"], title: "Topo", text: `Elevation and terrain analysis shown in feet above sea level. This data informs drainage patterns and structural positioning.<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#252e14"></div>6-8</div><div class="key-item"><div class="swatch" style="background:#2e3818"></div>8-10</div><div class="key-item"><div class="swatch" style="background:#38451d"></div>10-12</div><div class="key-item"><div class="swatch" style="background:#3d4a20"></div>12-14</div><div class="key-item"><div class="swatch" style="background:#54672c"></div>14-16</div><div class="key-item"><div class="swatch" style="background:#647b33"></div>16-18</div><div class="key-item"><div class="swatch" style="background:#7d9a41"></div>18-20</div><div class="key-item"><div class="swatch" style="background:#89a848"></div>20-22</div><div class="key-item"><div class="swatch" style="background:#abc576"></div>22-24</div><div class="key-item"><div class="swatch" style="background:#c9daa7"></div>24-26</div><div class="key-item"><div class="swatch" style="background:#d9e4c0"></div>26-28</div><div class="key-item"><div class="swatch" style="background:#ecf1e0"></div>28-30</div><div class="key-item"><div class="swatch" style="background:#f2f7ea"></div>30-34</div></div>` },
+        "water": { files: ["WATERWATER.json"], title: "Water", text: "Tidal and Riverine wetland systems adjacent to the site, including the boundary of standing and flowing water bodies." },
+        "setback": { files: ["PROP SETBACK.json"], title: "Setbacks", text: "Standard zoning dimensional requirements and structural offsets measured from the front, side, and rear property boundaries." },
+        "hotl": { files: ["LINE 99.json"], title: "50' Setback MSA HOTL", text: "50-foot mandatory structural setback from the Mean Salt Water High Ocean Tide Line (HOTL) as required by state and local regulations." },
+        "shore": { files: ["LINE 101.json"], title: "250' Shoreland Buffer", text: "The 250-foot protected shoreland boundary defined by the Comprehensive Shoreland Protection Act, regulating disturbance near the water's edge." },
+        "wood150": { files: ["LINE 1515.json"], title: "150' Woodland Buffer", text: "Environmental protection zone specifically for inland woodland and natural vegetation to maintain ecological balance and soil stability." },
+        "b25": { files: ["LINE 1313.json", "LINE 44.json"], title: "25' No-Cut Wetland Buffer", text: "A secondary environmental protection zone providing a 25-foot natural vegetation filter intended for isolated or smaller wetland systems." },
+        "b50": { files: ["LINE 111.json", "LINE 33.json"], title: "50' No-Cut Wetland Buffer", text: "A strict 50-foot protection zone for state-jurisdictional wetlands to prevent nutrient and sediment runoff into sensitive aquatic habitats." },
+        "b75": { files: ["LINE 1212.json", "LINE 55.json"], title: "75' Limited Cut, Septic Wetland Buffers", text: "The mandated 75-foot management area required for septic system placement and limited vegetation thinning/pruning activities." },
+        "b100": { files: ["LINE 1414.json", "LINE 22.json", "LINE 66.json", "LINE 77.json"], title: "100' No-Cut No-Disturbance Buffer", text: "A critical 100-foot 'No-Touch' zone protecting sensitive tidal ecologies, providing the primary defense against habitat degradation." },
+        "build": { files: ["CONSTRUCTION AREAA.json"], title: "Buildable Area", text: "The maximum developable net area remaining for primary and accessory structures after all legal environmental buffers and zoning setbacks are subtracted." },
+        "neighbor": { files: ["ARROWS.json", "NEIGHBORING HOUSES.json"], title: "Direction of neighboring properties", text: "A visual analysis of adjacent residential structures, their relative distance, and orientation to inform privacy and architectural context." },
+        "house": { files: ["HOUSE 1.json"], title: "House", text: `The proposed primary residence footprint. Approx 3,800 sq. ft. Total Floor Area.<div class="topo-key"><div class="key-item"><div class="swatch" style="background:#624990; border:1px solid #333"></div>Primary Structure Footprint</div></div>` },
+        "b150": { files: ["150.json"], title: "150’ Woodland Buffer", text: "Located within the Shoreland Zone: Primary structure construction is allowed; however, 25% of existing woodland canopy must remain unaltered." },
+        "b250": { files: ["250 MEEEEE.json"], title: "250' Woodland Buffer", text: "Protected Shoreland: No specific tree cutting restrictions apply here; structural additions and residential expansions are generally allowed within this zone." },
+        "v-open": { files: ["VIEW CORRIDOR NORTH.json"], title: "View to Open Water", text: "The primary visual axis directed toward the northern open water body, prioritized for living area orientation." },
+        "v-wood": { files: ["VIEW CORRIDOR SOUTH.json"], title: "View to Woods", text: "A protected visual corridor into the southern woodland area, providing privacy and a connection to the dense natural forest." },
+        "v-shallow": { files: ["VIEW CORRIDOR EAST.json"], title: "View to Shallow Water", text: "Visual orientation toward the eastern shallow wetland systems, offering unique seasonal landscape perspectives." },
+        "sun-s": { files: ["SUMMER SUN.json"], title: "Summer Sun", text: "Solar path analysis for the summer solstice, indicating the highest sun angle and longest day length for passive cooling considerations." },
+        "sun-w": { files: ["WINTER SUN 1.json"], title: "Winter Sun", text: "Solar path analysis for the winter solstice, indicating the lowest sun angle to optimize solar heat gain for the building." },
+        "w-win": { files: ["WINTER WIND ROSE.json"], title: "Winter Wind Rose", text: "Prevailing cold weather wind patterns showing the frequency and intensity of northern gusts during winter months." },
+        "w-spr": { files: ["SPRING WIND ROSE.json"], title: "Spring Wind Rose", text: "Seasonal distribution of winds during spring, often showing a transition in dominant gust directions." },
+        "w-sum": { files: ["SUMMER WIND ROSE.json"], title: "Summer Wind Rose", text: "Seasonal wind patterns during summer, typically utilized for natural ventilation design." },
+        "w-fall": { files: ["FALL WIND ROSE.json"], title: "Fall Wind Rose", text: "Seasonal distribution of winds during autumn, marking the return of higher intensity weather patterns." }
     };
 
     const anims = {};
